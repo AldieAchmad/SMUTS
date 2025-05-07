@@ -1,0 +1,55 @@
+#include <LiquidCrystal_I2C.h>
+#include <Servo.h>
+
+#define PIR_PIN 2
+#define SERVO_PIN 9
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo myServo;
+
+int currentPos = 0; // Posisi terakhir servo
+
+void setup() {
+  pinMode(PIR_PIN, INPUT);
+  myServo.attach(SERVO_PIN);
+  myServo.write(currentPos); // Posisi awal
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Sensor PIR Ready");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  int gerakan = digitalRead(PIR_PIN);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Status Gerakan:");
+
+  lcd.setCursor(0, 1);
+  if (gerakan == HIGH) {
+    lcd.print("TERDETEKSI     ");
+    if (currentPos != 90) {
+      // Gerakkan servo perlahan ke 90 derajat
+      for (int pos = currentPos; pos <= 90; pos++) {
+        myServo.write(pos);
+        delay(10); // Atur kecepatan
+      }
+      currentPos = 90;
+    }
+  } else {
+    lcd.print("TIDAK TERDETEKSI");
+    if (currentPos != 0) {
+      // Gerakkan servo perlahan ke 0 derajat
+      for (int pos = currentPos; pos >= 0; pos--) {
+        myServo.write(pos);
+        delay(10); // Atur kecepatan
+      }
+      currentPos = 0;
+    }
+  }
+
+  delay(500); // Tunggu sebentar sebelum cek ulang
+}
